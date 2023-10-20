@@ -2,8 +2,8 @@
 {% block content %}
 {% include 'Accounts/status.html'%}
 
+
     <br>
-   
         <div class="row">
             <div class="col-md-5">
                 <h5>CUSTOMER:</h5>
@@ -44,13 +44,74 @@
                             <td>{{ order.products }}</td>
                             <td>{{ order.date_created }}</td>
                             <td>{{ order.status }}</td>
-                            <td><a class="btn btn-sm btn-primary" href="">Update</a></td>
-                            <td><a class="btn btn-sm btn-danger" href="">Delete</a></td>
+                            <td><a class="btn btn-sm btn-primary" href="{% url 'updateOrder' order.id %}">Update</a></td>
+                            <td><a class="btn btn-sm btn-danger"  href="{% url 'deleteOrder' order.id %}" >Delete</a></td>
                         </tr>
                         {% endfor %}
                     </table>
                 </div>
             </div>
+
+
+            <!-- Dialog ADD Order -->
+            <div class="modal fade" id="add" tabindex="-1" role="dialog" aria-labelledby="addLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="deleteLabel">Add Order</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+                  <div class="modal-body">
+                      <form action="{% url 'createOrder' %}" method="POST">
+                          {% csrf_token %}
+                          {{form}}
+                          <!-- <div class="form-group">
+                              <label>Customer: </label>
+                              <input name="customer" type="text" class="form-control" required>
+                          </div> 
+                          <div class="form-group">
+                              <label>Products: </label>
+                              <input name="products" type="text" class="form-control" required>
+                          </div> 
+                          <div class="form-group">
+                              <label>Status: </label>
+                              <input name="status" type="text" class="form-control" required>
+                          </div> -->
+                          <div class="modal-footer">
+                              <a class="btn btn-warning" href="{% url 'home' %}">Cencel</a>
+                              <input class="btn btn-success" type="submit" value="Add">
+                          </div>
+                          
+                      </form>
+                  </div>
+              </div>
+              </div>
+          </div>
+          
+          <!-- Dialog Delete Order -->
+          <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="deleteLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                  <h5 class="modal-title" id="deleteLabel">Delete Order</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+                  </div>
+                  <div class="modal-body">
+                      <p>Are you sure to delete {{ item }} ?</p>
+                      <form action="" method="POST">
+                          <!-- Incretp data -->
+                          {% csrf_token %}
+                          <a class="btn btn-warning" href="{% url 'home' %}">Cencel</a>
+                          <input class="btn btn-primary" type="submit" name="confirm">
+                      </form>
+                  </div>
+              </div>
+              </div>
+          </div>
         </div>
   
 {% endblock %}
