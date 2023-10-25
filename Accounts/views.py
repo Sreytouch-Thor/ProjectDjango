@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from .models import *
-from .forms import OrderForm, CreateUserForm
+from .forms import OrderForm, CreateUserForm, CustomerForm
 from .filters import OrderFilter
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -106,6 +106,15 @@ def products(request):
      products = Product.objects.all()
      
      return render(request,'Accounts/products.html', {'products': products})
+
+@login_required(login_url='login')
+@allowed_user(allowed_roles=['customer'])
+def accountSettings(request):
+     context ={}
+
+     return render(request, 'Accounts/account_settings.html', context)
+
+
 
 @login_required(login_url='login')
 @allowed_user(allowed_roles=['admin'])
