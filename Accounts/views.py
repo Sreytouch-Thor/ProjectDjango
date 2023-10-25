@@ -6,6 +6,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login ,logout
 from django.contrib.auth.decorators import login_required
+from .decorators import unauthenticated_user, allowed_user,admin_only
+from django.contrib.auth.models import Group
 # Create your views here.
 
 def registerPage(request):
@@ -18,22 +20,25 @@ def registerPage(request):
           if request.method == 'POST':
                form = CreateUserForm(request.POST)
                if form.is_valid():
-                    form.save()
-                    user = form.cleaned_data.get('username')
-                    messages.success(request, f'Account was created for {user}')
+                    user = form.save()
+                    group = Group.objects.get(name='customer')
+                    user.groups.add(group)
+                    username = form.cleaned_data.get('username')
+                    messages.success(request, f'Account was created for {username}')
                     return redirect('login')
 
           context = {
                'form': form,
           }
           return render(request,'Accounts/register.html', context)
-
+#------ចាប់ paramter---    
+@unauthenticated_user
 def loginPage(request):
      # -----can't access to login page again when you already log-------
-     if request.user.is_authenticated:
-          return redirect('home')
+     # if request.user.is_authenticated:
+     #      return redirect('home')
      
-     else:
+     # else:
           if request.method == 'POST':
                username = request.POST.get('username')
                password = request.POST.get('password')
@@ -44,19 +49,24 @@ def loginPage(request):
           # else:
           #      messages.info(request, f'Wrong Username or Password')
 
-     context = {
+          context = {
 
-     }
+          }
 
-     return render(request,'Accounts/login.html', context)
+          return render(request,'Accounts/login.html', context)
+
 
 def logoutUser(request):
      logout(request)
      return redirect('login')
+def userPage(request):
+     context ={}
+
+     return render(request,'Accounts/user.html', context)
 
 # -close page when logout--- 
 @login_required(login_url='login')
-
+@admin_only
 def home(request):
     customers = Customer.objects.all()
     orders = Order.objects.all()
@@ -78,12 +88,14 @@ def home(request):
 
 
 @login_required(login_url='login')
+@allowed_user(allowed_roles=['admin'])
 def products(request):
      products = Product.objects.all()
      
      return render(request,'Accounts/products.html', {'products': products})
 
 @login_required(login_url='login')
+@allowed_user(allowed_roles=['admin'])
 def customer(request, pk):
      customers = Customer.objects.get(id=pk)
      orders = customers.order_set.all()
@@ -100,6 +112,7 @@ def customer(request, pk):
      }
      return render(request,'Accounts/customer.html', context)
 
+@allowed_user(allowed_roles=['admin'])
 def createOrder(request):
      form = OrderForm()
      # ------Condition test send POST data
@@ -117,7 +130,7 @@ def createOrder(request):
      }
      return render(request,'Accounts/order_form.html', context)
 
-
+@allowed_user(allowed_roles=['admin'])
 def updateOrder(request, pk):
      order = Order.objects.get(id=pk)
 # ---get date to form by use (instance)
@@ -135,6 +148,7 @@ def updateOrder(request, pk):
      }
      return render(request,'Accounts/order_form.html', context)
 
+@allowed_user(allowed_roles=['admin'])
 def deleteOrder(request, pk):
      order = Order.objects.get(id=pk)
      if request.method == 'POST':
