@@ -10,6 +10,8 @@ from .decorators import unauthenticated_user, allowed_user,admin_only
 from django.contrib.auth.models import Group
 # Create your views here.
 
+
+#======Register page========
 def registerPage(request):
      # -----can't access to register page again when you already log-------
      if request.user.is_authenticated:
@@ -28,10 +30,13 @@ def registerPage(request):
                     messages.success(request, f'Account was created for {username}')
                     return redirect('login')
 
-          context = {
-               'form': form,
-          }
-          return render(request,'Accounts/register.html', context)
+     context = {
+          'form': form,
+     }
+     return render(request,'Accounts/register.html', context)
+
+
+# =========== Login page=========================================================
 #------ចាប់ paramter---    
 @unauthenticated_user
 def loginPage(request):
@@ -56,11 +61,12 @@ def loginPage(request):
 
           return render(request,'Accounts/login.html', context)
 
-
+# =========Logout page===============================================================
 def logoutUser(request):
      logout(request)
      return redirect('login')
 
+# ======User Page ===================================================================
 @login_required(login_url='login')
 @allowed_user(allowed_roles=['customer'])
 def userPage(request):
@@ -77,6 +83,8 @@ def userPage(request):
 
      return render(request,'Accounts/user.html', context)
 
+
+#======Home Page ===================================================================
 # -close page when logout--- 
 @login_required(login_url='login')
 @admin_only
@@ -99,7 +107,7 @@ def home(request):
     return render(request,'Accounts/dashboard.html', context)
 
 
-
+# ======Product page============================================================
 @login_required(login_url='login')
 @allowed_user(allowed_roles=['admin'])
 def products(request):
@@ -107,15 +115,28 @@ def products(request):
      
      return render(request,'Accounts/products.html', {'products': products})
 
+
+
+#======Account setting ======================================================
 @login_required(login_url='login')
 @allowed_user(allowed_roles=['customer'])
 def accountSettings(request):
-     context ={}
+     customer = request.user.customer
+     form = CustomerForm(instance=customer)
+
+     if  request.method == 'POST':
+          form = CustomerForm(request.POST, request.FILES, instance=customer)
+          if form.is_valid():
+               form.save()
+
+     context ={
+          'form': form,
+     }
 
      return render(request, 'Accounts/account_settings.html', context)
 
 
-
+# =====Customer page===============================================================
 @login_required(login_url='login')
 @allowed_user(allowed_roles=['admin'])
 def customer(request, pk):
@@ -134,6 +155,7 @@ def customer(request, pk):
      }
      return render(request,'Accounts/customer.html', context)
 
+# ========Create Order===============
 @allowed_user(allowed_roles=['admin'])
 def createOrder(request):
      form = OrderForm()
